@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        p{
+            margin: 0;
+            display: inline;
+            line-height: 30px;
+            padding: 5px 0;
+            font-size: 16px;
+            background-color: transparent;
+        }
+        span{
+            background-color: transparent;
+            white-space: pre;
+        }
+        .hover-habilitado span:hover{
+            background-color: yellow;
+        }
+        .hover-habilitado p:hover:not(:has(span:hover)){
+            background-color: yellow;
+        }
+        p,span{
+            transition: background-color 0.3s;
+        }
+    </style>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div id="texto">
+    </div>
+</body>
+</html>
