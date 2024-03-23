@@ -39,55 +39,135 @@ novo. Um rapaz.
         `
 
 let saida = '';
-texto.split(/(?<=[.?!])/).forEach(linha=>{
+texto.split(/(?<=[.?!])/).forEach(linha => {
     saida += '<p>';
-    linha.split(/(?<=[ \n])/).forEach(palavra=>{
-        saida+='<span>'+palavra+'</span>';
+    linha.split(/(?<=[ \n;,:])/).forEach(palavra => {
+        // console.log("'"+palavra+"'");
+        if (palavra == "\n")
+            saida += "<br>";
+        else
+            saida += '<span>' + palavra.substring(0, palavra.length - 1) + '</span>' + palavra[palavra.length - 1];
     });
     saida += '</p>';
 });
 let el = document.getElementById("texto");
 el.innerHTML = saida;
 
+let mostrador = document.getElementById("mostrador-destaque");
+let mostradores = [];
+let rectsMostradores = []
+let opacidadeMostradores = 0;
+
 let ultimaFrase = '';
 let momentoHoverInicial;
 let buscou;
-function update(){
-    if(window.getSelection().toString().length){
+
+const transicaoMarcador = 0.1;
+
+function lerp(a, b, c) {
+    return a * (1 - c) + b * c;
+}
+
+function posisionarMarcadores(e, mostrar = true) {
+    if(e){
+
+        let rects = [...e.getClientRects()];
+    
+        if (e.childNodes[0].nodeName == "BR")
+            rects.shift();
+    
+        let qtdMostradores = mostradores.length;
+        while (qtdMostradores < rects.length) {
+            mostradores.push(document.createElement("div"));
+    
+            let ref = rects[qtdMostradores];
+            if (rectsMostradores.length > 0)
+                ref = rectsMostradores[rectsMostradores.length - 1];
+            rectsMostradores.push(new DOMRect(x = ref.x, y = ref.y, width = ref.width, height = ref.height));
+    
+            console.log(mostradores);
+            mostrador.appendChild(mostradores[qtdMostradores]);
+            qtdMostradores++;
+        }
+    
+        // console.log(rects.length, mostradores.length, rectsMostradores.length);
+    
+        
+        for (let i = 0; i < mostradores.length; i++) {
+            let indexRect = Math.min(rects.length - 1, i);
+            rectsMostradores[i].x = lerp(rectsMostradores[i].x, rects[indexRect].x, transicaoMarcador);
+            rectsMostradores[i].y = lerp(rectsMostradores[i].y, rects[indexRect].y, transicaoMarcador);
+            rectsMostradores[i].width = lerp(rectsMostradores[i].width, rects[indexRect].width, transicaoMarcador);
+            rectsMostradores[i].height = lerp(rectsMostradores[i].height, rects[indexRect].height, transicaoMarcador);
+        }
+    }
+    opacidadeMostradores = lerp(opacidadeMostradores, mostrar?1:0, mostrar?0.1:0.2);
+    
+    for (let i = 0; i < mostradores.length; i++) {
+        mostradores[i].style.left = rectsMostradores[i].x + "px";
+        mostradores[i].style.top = rectsMostradores[i].y + "px";
+        mostradores[i].style.width = rectsMostradores[i].width + "px";
+        mostradores[i].style.height = rectsMostradores[i].height + "px";
+        mostradores[i].style.opacity = opacidadeMostradores;
+    }
+}
+
+function update() {
+    if (window.getSelection().toString().length) {
         el.classList.remove("hover-habilitado");
         let exactText = window.getSelection().toString();
-        if(exactText!=ultimaFrase){
+        if (exactText != ultimaFrase) {
             ultimaFrase = exactText;
             momentoHoverInicial = new Date();
             buscou = false;
         }
-        else if(new Date() -momentoHoverInicial > 1000 && !buscou){
+        else if (new Date() - momentoHoverInicial > 1000 && !buscou) {
             console.log(exactText);
             buscou = true;
         }
-     }
-    else{
+    }
+    else {
         el.classList.add("hover-habilitado");
-        
-        let e = el.querySelector(':hover:not(:has(span:hover))');
     
-        if(e){
-            if(ultimaFrase != e.innerText){
+        let revelandoMostradores = false;
+
+        console.log(opacidadeMostradores);
+
+        let e = el.querySelector(':hover:not(:has(span:hover))');
+
+        if (e) {
+
+            if (ultimaFrase != e.innerText) {
                 // console.log(e.innerText);
                 ultimaFrase = e.innerText;
                 momentoHoverInicial = new Date();
                 buscou = false;
             }
-            else if(new Date() -momentoHoverInicial > 1000 && !buscou){
+            else {
+                let tempoEmHover = new Date() - momentoHoverInicial;
+                if (tempoEmHover > 200) {
+                    posisionarMarcadores(e,true);
+                }
+                if (tempoEmHover > 1000 && !buscou) {
                     console.log(e.innerText);
                     buscou = true;
+                }
             }
         }
-        else{
-            ultimaFrase = "";
+        else {
+            if(ultimaFrase != ""){
+                ultimaFrase = "";
+                momentoHoverInicial = new Date();
+            }
+            let tempoEmHover = new Date() - momentoHoverInicial;
+
+            if (tempoEmHover > 100) {
+                posisionarMarcadores(e,false);
+            }
+
         }
 
-    }    
+    }
 
     window.requestAnimationFrame(update)
 }

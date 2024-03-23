@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        #texto{
+            position: relative;
+            z-index: 10;
+        }
         p{
             margin: 0;
             display: inline;
-            line-height: 30px;
+            line-height: 27px;
             padding: 5px 0;
             font-size: 16px;
             background-color: transparent;
@@ -17,20 +21,24 @@
             background-color: transparent;
             white-space: pre;
         }
-        .hover-habilitado span:hover{
-            background-color: yellow;
-        }
-        .hover-habilitado p:hover:not(:has(span:hover)){
-            background-color: yellow;
-        }
+        /* .hover-habilitado span:hover, .hover-habilitado p:hover:not(:has(span:hover)){
+            background-color: rgba(255, 255, 0, 0.279);
+        } */
         p,span{
             transition: background-color 0.3s;
+        }
+        #mostrador-destaque div{
+            background-color: rgb(240, 240, 138);
+            position: fixed;
+            width: 10px;
+            height: 1em;
         }
     </style>
     <script src="script.js" defer></script>
 </head>
 <body>
-    <div id="texto">
+    <div id="mostrador-destaque">
     </div>
+    <div id="texto"> </div>
 </body>
 </html>
